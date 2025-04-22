@@ -16,6 +16,7 @@ classifiers = [
 dependencies = [
   "common",
   "core",
+  "custom_nlp",
   "pip>=25.0.1",
 ]
 
@@ -35,6 +36,7 @@ dev = [
 [tool.uv.sources]
 core = { workspace = true }
 common = { workspace = true }
+custom_nlp = { workspace = true }
 
 [tool.uv.workspace]
 members = ["src/packages/*"]

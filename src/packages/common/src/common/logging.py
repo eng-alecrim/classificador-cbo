@@ -14,6 +14,7 @@ from .config import LoggerConfig, JsonConfigSettingsSource, BaseSettings
 # FUNÇÕES
 # =============================================================================
 
+
 def configure_logging(
     project_name: str,
     log_to_file: Optional[bool] = False,
