@@ -5,15 +5,18 @@
 import pandas as pd
 from common.utils import get_project_root
 from typing import Iterable
-from custom_nlp.src.custom_nlp.tratamento_texto import renomeia_cols
+from custom_nlp.tratamento_texto import renomeia_cols
 
 # =============================================================================
 # CONSTANTES
 # =============================================================================
 
 project_root_dir = get_project_root("classificador-cbo")
-treated_data_dir = project_root_dir / f"data/silver/cbo_sintese_perfil"
-treated_data_dir.mkdir(parents=True, exist_ok=True)
+bronze_layer = project_root_dir / "data/bronze"
+silver_layer = project_root_dir / "data/silver"
+
+processed_data_dir = silver_layer / "processed"
+processed_data_dir.mkdir(parents=True, exist_ok=True)
 
 texto_para_remover = "VERSÃO PRELIMINAR (Esta versão será substituída após conclusão da revisão de perfis, conhecimentos, habilidades, atitudes e níveis)"
 
@@ -47,7 +50,7 @@ def agg_textos(
 
 def main() -> None:
     # Carregando os dados
-    qbq_path = project_root_dir / "data/bronze/OcupacoesCBO.xlsx"
+    qbq_path = bronze_layer / "OcupacoesCBO.xlsx"
     cols_interesse = ["CodCBO", "Ocupação", "Síntese", "PerfilOcupacional"]
     df = pd.read_excel(
         qbq_path, sheet_name="Ocupação", usecols=cols_interesse, dtype=str
@@ -72,9 +75,7 @@ def main() -> None:
         textos = renomeia_cols(
             agg_textos(df, classificacao[0], ["Síntese", "PerfilOcupacional"])
         )
-        path_csv_titulos = (
-            project_root_dir / f"data/bronze/CBO2002 - {classificacao[1]}.csv"
-        )
+        path_csv_titulos = bronze_layer / f"CBO2002 - {classificacao[1]}.csv"
 
         titulos = renomeia_cols(
             pd.read_csv(path_csv_titulos, dtype=str, encoding="latin1", sep=";")
@@ -82,7 +83,7 @@ def main() -> None:
 
         textos_e_titulos = pd.merge(left=textos, right=titulos, on="codigo", how="left")
 
-        path_csv_destino = treated_data_dir / f"{classificacao[0]}.csv"
+        path_csv_destino = processed_data_dir / f"{classificacao[0]}.csv"
         textos_e_titulos.to_csv(
             path_csv_destino, index=False, sep="\t", encoding="utf-8"
         )

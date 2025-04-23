@@ -2,12 +2,13 @@
 # BIBLIOTECAS E MÓDULOS
 # =============================================================================
 
-from abc import ABC, abstractmethod
-from typing import Type
-import unicodedata
 import re
-import pandas as pd
+import unicodedata
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Tuple, Type
+
 import nltk
+import pandas as pd
 
 # =============================================================================
 # CLASSES
@@ -21,8 +22,10 @@ class TextProcessingStrategy(ABC):
 
 
 class NormalizationStrategy(TextProcessingStrategy):
-    def process(self, text: str) -> str:
+    def __init__(self, lower: bool = True) -> None:
+        self.lower = lower
 
+    def process(self, text: str) -> str:
         text = str(text)
         nfkd_form = unicodedata.normalize("NFC", text)
         output_str = "".join([c for c in nfkd_form if not unicodedata.combining(c)])
@@ -30,7 +33,8 @@ class NormalizationStrategy(TextProcessingStrategy):
         output_str = re.sub(regex_tags, "", output_str)
         regex = re.compile(r"[^a-zA-Z_À-ÿ\s]+")
         tokens = regex.sub(" ", output_str).split()
-        tokens = list(map(lambda x: x.lower(), tokens))
+        if self.lower:
+            tokens = list(map(lambda x: x.lower(), tokens))
 
         return " ".join(map(lambda x: x.strip(), tokens))
 
@@ -55,15 +59,34 @@ class StopwordsRemovalStrategy(TextProcessingStrategy):
 
 
 class Preprocessor:
-    def __init__(self, strategy: Type[TextProcessingStrategy] = None) -> None:
-        self.strategy = strategy()
+    def __init__(self, strategy: Type[TextProcessingStrategy] = None, **kwargs) -> None:
+        self.strategy = strategy(**kwargs) if strategy else None
+        self.pipeline = []
 
-    def set_strategy(self, strategy: Type[TextProcessingStrategy]) -> None:
-
-        self.strategy = strategy()
+    def set_strategy(self, strategy: Type[TextProcessingStrategy], **kwargs) -> None:
+        self.strategy = strategy(**kwargs)
 
     def apply(self, text: str) -> str:
         return self.strategy.process(text)
+
+    def set_pipeline(
+        self, strategy_pipeline: List[Tuple[TextProcessingStrategy, Dict[str, Any]]]
+    ):
+        self.pipeline = []
+        for strategy, strategy_kwargs in strategy_pipeline:
+            (
+                self.pipeline.append(strategy(**strategy_kwargs))
+                if strategy_kwargs
+                else self.pipeline.append(strategy())
+            )
+
+    def apply_strategy_pipeline(self, text: str) -> str:
+        treated_text = text
+
+        for strategy in self.pipeline:
+            treated_text = strategy.process(treated_text)
+
+        return treated_text
 
 
 # =============================================================================

@@ -1,7 +1,8 @@
-from common.logging import configure_logging
-from loguru import logger
-from dotenv import find_dotenv, load_dotenv
 import os
+
+from common.logging import configure_logging
+from dotenv import find_dotenv, load_dotenv
+from loguru import logger
 
 load_dotenv(find_dotenv())
 project_name = os.getenv("PROJECT_NAME", "classificador-cbo")

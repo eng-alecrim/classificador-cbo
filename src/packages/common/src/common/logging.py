@@ -7,8 +7,8 @@ from typing import Optional
 
 from loguru import logger
 
+from .config import BaseSettings, JsonConfigSettingsSource, LoggerConfig
 from .utils import get_project_root
-from .config import LoggerConfig, JsonConfigSettingsSource, BaseSettings
 
 # =============================================================================
 # FUNÇÕES

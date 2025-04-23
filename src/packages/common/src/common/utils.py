@@ -3,8 +3,8 @@
 # =============================================================================
 
 import json
-from typing import Any, Dict, Union
 from pathlib import Path
+from typing import Any, Dict, Union
 
 # =============================================================================
 # FUNÇÕES
